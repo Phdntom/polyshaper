@@ -1,6 +1,11 @@
 struct Node{
+    /*'
+
+    
+    '*/
 	int i;
 	int j;
+    bool color;
 };
 
 void print_avail(bool **avail, int N_site)
@@ -44,19 +49,19 @@ int polypletNeighbors( Node v, Stack<Node> &stack,
     /*'
     Parameters
     ----------
-    v:          the Node around which we find neighbor cells
-    stack:      a LIFO structure holding all prev added neighbors
-    avail:      tracks if a cell is being used already
-    N_site:     defines size of some variables
+    v:          Node, around which we find neighbor cells
+    stack:      LIFO list, holds all prev added neighbors
+    avail:      bool, TRUE when a cell can be added
+    N_site:     int, defines size of grid variables and max depth
     
     Returns
     -------
     num_added:  the count of the number of neighbors added in this call
 
     DETAILS
-        Adds cells of a square lattice using the order below
-        starting with cell 0 to the current stack. Cells which are not
-        available are skipped.
+        Adds nearest and next nearest cells of a square lattice to the
+        current stack. The order is defined below beginning with cell 0.
+        Cells which are not available are skipped.
         . . . . .
         . 5 6 7 .
         . 4 v 0 .
@@ -133,19 +138,20 @@ int polyominoNeighbors( Node v, Stack<Node> &stack,
     /*'
     Parameters
     ----------
-    v:      the Node around which we find neighbor cells
-    stack:  a LIFO structure holding all prev added neighbors
-    avail:  tracks if a cell is being used already
-    N_site: defines size of some variables
-    
+    v:          Node, around which we find neighbor cells
+    stack:      LIFO list, holds all prev added neighbors
+    avail:      bool, TRUE when a cell can be added
+    N_site:     int, defines size of grid variables and max depth
+ 
     Returns
     -------
     num_added:  the count of the number of neighbors added in this call
 
     DETAILS
-        Adds cells of a square lattice using the order below
-        starting with cell 0 to the current stack. Cells which are not
-        available are skipped.
+        Adds nearest neighbor cells of a square lattice to the
+        current stack. The order is defined below beginning with cell 0.
+        Cells which are not available are skipped.
+
         . . . . .
         . . 3 . .
         . 2 v 0 .
@@ -190,22 +196,22 @@ int polyominoNeighbors( Node v, Stack<Node> &stack,
 int polyhexNeighbors( Node v, Stack<Node> &stack,
                       bool **avail, int const N_site )
 {
-    /*
+    /*'
     Parameters
     ----------
-    v:      the Node around which we find neighbor cells
-    stack:  a LIFO structure holding all previously added neighbors
-    avail:  FALSE if a cell is being used already
-    N_site: defines size of grid related variables
+    v:          Node, around which we find neighbor cells
+    stack:      LIFO list, holds all prev added neighbors
+    avail:      bool, TRUE when a cell can be added
+    N_site:     int, defines size of grid variables and max depth
     
     Returns
     -------
     num_added:  the count of the number of neighbors added in this call
 
     DETAILS
-        Adds cells of a honeycomb lattice using the order below
-        starting with cell 0 to the current stack. Cells which are not
-        available are skipped.
+        Adds nearest neighbor cells a honeycomb lattice to the
+        current stack. The order is defined below beginning with cell 0.
+        Cells which are not available are skipped.
 
         The lattice is mapped to a square lattice as follows...
 
@@ -215,11 +221,9 @@ int polyhexNeighbors( Node v, Stack<Node> &stack,
         . q 2 1 . .             . q 2 1 .
          . . . . .              . . . . .
 
-        cell v: (i,j) does not neigbhor:
-                 r: (i-1,j+1) 
-                 q: (i+1,j-1)
+        cell v: (i,j) does not neigbhor r: (i-1,j+1) or q: (i+1,j-1).
         
-    */
+    '*/
 	Node n;
 	int num_added = 0;
 
@@ -268,6 +272,98 @@ int polyhexNeighbors( Node v, Stack<Node> &stack,
 
 	return num_added;
 }
+
+int polyiamondNeighbors( Node v, Stack<Node> &stack,
+                      bool **avail, int const N_site )
+{
+    /*'
+    Parameters
+    ----------
+    v:          Node, around which we find neighbor cells
+    stack:      LIFO list, holds all prev added neighbors
+    avail:      bool, TRUE when a cell can be added
+    N_site:     int, defines size of grid variables and max depth
+    
+    Returns
+    -------
+    num_added:  the count of the number of neighbors added in this call
+
+    DETAILS
+        Adds nearest neighbor cells a triangular lattice to the
+        current stack. The order is defined below beginning with cell 0.
+        Cells which are not available are skipped.
+
+
+        The lattice can be represented as a rectangular lattice with each
+        cell split into two triangles. There are two triangle types, marked
+        "a" and "b" in the figure. Cell "B" has exactly three nearest
+        neighbors, marked "A"
+        .___.___.___.___.___.
+        |\ a|\ a|\ a|\ a|\ a|   
+        | \ | \ | \ | \ | \ |
+        |b \|b \|b \|b \|b \|
+        .___.___.___.___.___.
+        |\ a|\ A|\ A|\ a|\ a|   
+        | \ | \ | \ | \ | \ |
+        |b \|b \|B \|b \|b \|
+        .___.___.___.___.___.
+        |\ a|\ a|\ A|\ a|\ a|   
+        | \ | \ | \ | \ | \ |
+        |b \|b \|b \|b \|b \|
+        .___.___.___.___.___.
+     
+    '*/
+	Node n;
+	int num_added = 0;
+
+	n.i = v.i;
+	n.j = v.j+1;
+	if( IsValid(n,N_site) && avail[n.i][n.j] ) {
+		stack.Push(n);
+		avail[n.i][n.j] = 0;
+		num_added++;
+	}
+	n.i = v.i+1;
+	n.j = v.j+1;
+	if( IsValid(n,N_site) && avail[n.i][n.j] ) {
+		stack.Push(n);
+		avail[n.i][n.j] = 0;
+		num_added++;
+	}
+	n.i = v.i+1;
+	n.j = v.j;
+	if( IsValid(n,N_site) && avail[n.i][n.j] ) {
+		stack.Push(n);
+		avail[n.i][n.j] = 0;
+		num_added++;
+	}
+	n.i = v.i;
+	n.j = v.j-1;
+	if( IsValid(n,N_site) && avail[n.i][n.j] ) {
+		stack.Push(n);
+		avail[n.i][n.j] = 0;
+		num_added++;
+	}
+	n.i = v.i-1;
+	n.j = v.j-1;
+	if( IsValid(n,N_site) && avail[n.i][n.j] ) {
+		stack.Push(n);
+		avail[n.i][n.j] = 0;
+		num_added++;
+	}
+	n.i = v.i-1;
+	n.j = v.j;
+	if( IsValid(n,N_site) && avail[n.i][n.j] ) {
+		stack.Push(n);
+		avail[n.i][n.j] = 0;
+		num_added++;
+	}
+
+	return num_added;
+}
+
+
+
 
 void explore(Stack<Node> &stack,bool **avail,Node *path,int depth,
   int const N_site,	int &graph_count,
